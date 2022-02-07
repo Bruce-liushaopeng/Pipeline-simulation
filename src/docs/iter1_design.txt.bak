@@ -1,0 +1,50 @@
+//time constanst
+insp1_c1_time = 5
+insp2_c2_time = 15
+insp2_c3_time = 15
+ws1_time = 5
+ws2_time = 11
+ws3_time = 9
+
+//Elements to take track of 
+clock = 0
+block_time = 0
+bf_c1w1 = 0
+bf_c1w2 = 0
+bf_c2w2 = 0
+bf_c1w3 = 0
+bf_c3w3 = 0
+p1_produce = 0
+p2_produce = 0
+p3_produce = 0
+
+//possible events
+
+1. inspector 1 start to inspect c1 [ins1c1_start]
+	before: inspector1 finished inspecting last component
+	post: create event of inspect1 finished inspecting
+	
+2. inspector 2 start to inspect c2/c3 [ins2c2_start] or [ins2c3_start]
+	before: inspector2 finished inspecting last component
+			randomly choose a c2 or c3 to inspect. (hard code to be switch to one another each time)
+	post: create event of c2/c3 being produced
+
+3. inspector 1 finished inspecting c1 [ins1c1_end]
+	before: this is being created by ins1c1_start
+	post: check if buffer are available, if avilable increment of buffer size  && create event for WorkStation1
+			if no buffer available, schedule this event to be right after the next event;
+
+4. inspector 2 finished inspecting c2/c3 [ins2c2_end] or [ins2c3_end]
+	before: this is being created by ins1c1_start
+	post: check if buffer are available, if avilable increment of buffer size;
+			if no buffer available, schedule this event to be right after the next event;
+			
+5. Workstation 1 start to produce part1 
+	before: this event is created by [ins1c1_end]
+	after: P1 is created P1
+	
+	
+
+
+
+			
