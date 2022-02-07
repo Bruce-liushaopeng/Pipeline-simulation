@@ -1,0 +1,82 @@
+//time constanst
+insp1_c1_time = 5
+insp2_c2_time = 15
+insp2_c3_time = 15
+ws1_time = 5
+ws2_time = 11
+ws3_time = 9
+
+//Elements to take track of 
+clock = 0
+block_time = 0
+bf_c1w1 = 0
+bf_c1w2 = 0
+bf_c2w2 = 0
+bf_c1w3 = 0
+bf_c3w3 = 0
+p1_produce = 0
+p2_produce = 0
+p3_produce = 0
+
+//possible events
+
+1. inspector 1 start to inspect c1 [ins1c1_start]
+	before: inspector1 finished inspecting last component
+	post: create event of inspect1 finished inspecting
+	
+2. inspector 2 start to inspect c2/c3 [ins2c2_start] or [ins2c3_start]
+	before: inspector2 finished inspecting last component
+			randomly choose a c2 or c3 to inspect. (hard code to be switch to one another each time)
+	post: create event of c2/c3 being produced
+
+3. inspector 1 finished inspecting c1 [ins1c1_end]
+	before: this is being created by ins1c1_start
+	post: check if buffer are available, 
+			if avilable increment of buffer size  && create event for WorkStation1 && create event for [ins1c1_start]
+			else if no buffer available, schedule this event to be right after the next event;
+
+4. inspector 2 finished inspecting c2/c3 [ins2c2_end] or [ins2c3_end]
+	before: this is being created by ins1c1_start
+	post: check if buffer are available, 
+			if avilable increment of buffer size;
+				if buffer size reached threashold, create event [w2_start] or [w3_start]
+				then, create event [ins2c2_start] or [ins2c3_start]
+			if no buffer available, schedule this event to be right after the next event;
+			
+5. Workstation 1 start to produce part1 [w1_start]
+	before: this event is created by [ins1c1_end] 
+	after: decrement Buffer_c1w1
+		   create event of [w1_end]
+
+6. Workstation 2 start to produce part2 [w2_start]
+	before: this event is created by [ins1c1_end] and/or [ins2c2_end]
+	after: decrement Buffer_c2w2 && decrement Buffer_c1w2
+		   create event of [w2_end]
+	
+7. Workstation 3 start to produce part3 [w3_start]
+	before: this event is created by [ins1c1_end] and/or [ins2c3_end]
+	after:  decrement Buffer_c3w3 && decrement Buffer_c1w3
+			create event of [w3_end]
+	
+8. Workstation 1 finished produce part1 [w1_end]
+	before: created by [w1_start]
+	after: increment P1 count
+	
+9. Workstation 2 finished produce part2 [w2_end]
+	before: created by [w2_start]
+	after: increment P2 count
+	
+10. Workstation 3 finished produce part3 [w3_end]
+	before: created by [w3_start]
+	after: increment P3 count
+
+
+	
+	
+
+	
+	
+
+
+
+			
