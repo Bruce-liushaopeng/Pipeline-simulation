@@ -64,7 +64,12 @@ def is_bfC1_full():
     
 
 def handle_evt(evt):
-    global clock,bf_c1w1, block_time, bf_c1w2,bf_c2w2
+    '''
+    Concern about adding event w2_start and w3_start.
+    I think it is better to create event at the end of this function. 
+    having another if statement to check if buffer c1w2 and c2w2 has enough component to assemble product
+    '''
+    global clock, bf_c1w1, block_time, w1_aval, w2_aval, w3_aval, bf_c1w2, bf_c1w3, bf_c2w2, bf_c3w3
     print(evt[1] +" at time " +str(clock))
     print("length of event queue is " + str(len(evt_queue)))
     if(len(evt_queue)>1):
@@ -78,8 +83,11 @@ def handle_evt(evt):
     elif(evt_type == ins2c2_start):
         evt_queue.append((clock + insp2_c2_time,ins2c2_end))
         print("create end event for ins2")
-    
-    if(evt_type == ins1c1_end):
+
+    elif(evt_type == ins2c3_start):
+        evt_queue.append((clock + insp2_c3_time, ins2c3_end))
+
+    elif(evt_type == ins1c1_end):
         if(is_bfC1_full()):
             evt_queue.append((clock + next_evt_time + 0.01,ins1c1_end))
             block_time += next_evt_time - clock
@@ -94,9 +102,24 @@ def handle_evt(evt):
                 evt_queue.append((clock,w3_start))
             evt_queue.append((clock,ins1c1_start))
 
+    elif(evt_type == ins2c2_end):
+        if(bf_c2w2 == 2):
+            evt_queue.append((clock + next_evt_time, ins2c2_end))
+        else:
+            bf_c2w2 += 1
+            evt_queue.append((clock, w2_start))
+
+    elif(evt_type == ins2c3_end):
+        if(bf_c3w3 == 2):
+            evt_queue.append((clock + next_evt_time, ins2c3_end))
+        else:
+            bf_c3w3 += 1
+            evt_queue.append((clock, w3_start))
+
     elif(evt_type == w1_start):
         if(w1_aval and bf_c1w1>0):
             bf_c1w1 -=1
+            w1_aval = False
             evt_queue.append((clock + ws1_time, w1_end))
         else:
             evt_queue.append((clock + next_evt_time, w1_start))
@@ -105,17 +128,33 @@ def handle_evt(evt):
         if(w2_aval and bf_c2w2>0 and bf_c1w2>0):
             bf_c1w2 -=1
             bf_c2w2 -=1
+            w2_aval = False
             evt_queue.append((clock + ws2_time, w2_end))
         else:
             evt_queue.append((clock + next_evt_time, w2_start))
+    
+    elif(evt_type == w3_start):
+        if(w3_aval and bf_c3w3>0 and bf_c1w3>0):
+            bf_c3w3 -=1
+            bf_c1w3 -=1
+            w3_aval = False
+            evt_queue.append((clock + ws3_time, w3_end))
+        else:
+            evt_queue.append((clock + next_evt_time, w3_start))
+
+    elif(evt_type == w1_end):
+        w1_aval = True
+    
+    elif(evt_type == w2_end):
+        w2_aval = True
+
+    elif(evt_type == w3_end):
+        w3_aval = True
+
     elif(evt_type == end_event):
         print(end_event)
         exit()
 
-
-    
-
-        
 
 def start():
     while(len(evt_queue) > 0 ):
