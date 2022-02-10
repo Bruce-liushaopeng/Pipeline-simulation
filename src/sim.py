@@ -45,7 +45,8 @@ end_event = "system end"
 
 evt_queue = [(0,ins1c1_start), (0,ins2_start),(699,end_event)] # initial evetn queue
 
-def workstation_start():
+# this function check the buffer condiftion and start workstation accordingly
+def workstation_start(): 
     global w1_aval,w2_aval,w3_aval, bf_c1w1,bf_c1w2,bf_c1w3,bf_c2w2,bf_c3w3
     if(w1_aval and bf_c1w1>0):
         evt_queue.append((clock,w1_start))
@@ -62,6 +63,8 @@ def workstation_start():
         bf_c3w3-=1
         bf_c1w3-=1
 
+# this function perform the logic to assign c1 to each buffer based on 
+# current components in each buffer
 def assign_c1():
     global bf_c1w1,bf_c1w2,bf_c1w3
     if(bf_c1w1 == bf_c1w2 == bf_c1w3):
@@ -78,42 +81,40 @@ def assign_c1():
         return 3
     return 0
 
+# return true is buffer for C1 are all full
 def is_bfC1_full():
     global bf_c1w1,bf_c1w2,bf_c1w3
     if(bf_c1w1 == bf_c1w2 == bf_c1w3 == 2):
         return True
     return False
     
-
+# this method handles events 
 def handle_evt(evt):
-    '''
-    Concern about adding event w2_start and w3_start.
-    I think it is better to create event at the end of this function. 
-    having another if statement to check if buffer c1w2 and c2w2 has enough component to assemble product
-    '''
     global clock,last_event_time,idle_time, bf_c1w1, block_time, w1_aval, w2_aval, w3_aval, bf_c1w2, bf_c1w3, bf_c2w2, bf_c3w3,p1_produce,p2_produce,p3_produce,ins2_start,lastIsC2,w1_idle,w2_idle,w3_idle
-    last_event_time = clock
+    last_event_time = clock # used to store last clock to calculate idle time
     clock = evt[0]
-    print("queue length is " + str(len(evt_queue)))
     print(evt[1] +" at time " +str(clock))
-    print("length of event queue is " + str(len(evt_queue)))
     if(len(evt_queue)>1):
             next_evt_time = evt_queue[0][0]
     else:
         print("no next event")
         exit()
     evt_type = evt[1]
-    if(evt_type == ins1c1_start):
+
+    # inspector 1 start inspect C1
+    if(evt_type == ins1c1_start): 
         evt_queue.append((clock + insp1_c1_time,ins1c1_end))
 
+    # inspector 2 start inspect
     elif(evt_type == ins2_start):
-        if lastIsC2:
+        if lastIsC2: # if the last one inspected is C2, this time it will go for C3
             lastIsC2 = False
             evt_queue.append((clock + insp2_c3_time,ins2c3_end))
         else:
             lastIsC2 = True
             evt_queue.append((clock + insp2_c2_time,ins2c2_end))
 
+    # instector 1 finished inspecting C1
     elif(evt_type == ins1c1_end):
         if(is_bfC1_full()):
             evt_queue.append((next_evt_time + 0.1,ins1c1_end))
@@ -123,6 +124,7 @@ def handle_evt(evt):
             assign_c1() #perform logic to assign c1 to the right buffer
             evt_queue.append((clock,ins1c1_start))
 
+    # # instector 2 finished inspecting C2
     elif(evt_type == ins2c2_end):
         if(bf_c2w2 == 2):
             evt_queue.append(( next_evt_time + 0.1, ins2c2_end))
@@ -132,6 +134,7 @@ def handle_evt(evt):
             #evt_queue.append((clock, w2_start))
             evt_queue.append((clock,ins2_start))
 
+    # instector 2 finished inspecting C3
     elif(evt_type == ins2c3_end):
         if(bf_c3w3 == 2):
             evt_queue.append(( next_evt_time + 0.1, ins2c3_end))
@@ -140,27 +143,33 @@ def handle_evt(evt):
             bf_c3w3 += 1
             evt_queue.append((clock,ins2_start))
 
+    # workstation 1 start 
     elif(evt_type == w1_start):
         evt_queue.append((clock + ws1_time, w1_end))
 
+    # workstation 2 start 
     elif(evt_type == w2_start):
         evt_queue.append((clock + ws2_time, w2_end))
-    
+    # workstation 3 start 
     elif(evt_type == w3_start):
         evt_queue.append((clock + ws3_time, w3_end))
 
+    # workstation 1 finished produce 
     elif(evt_type == w1_end):
         p1_produce +=1
         w1_aval = True
     
+    # workstation 2 finished produce
     elif(evt_type == w2_end):
         p2_produce+=1
         w2_aval = True
 
+    # workstation 3 finished produce
     elif(evt_type == w3_end):
         p3_produce+=1
         w3_aval = True
-
+    
+    # end event and program exit
     elif(evt_type == end_event):
         print(end_event)
         exit()
@@ -175,8 +184,10 @@ def handle_evt(evt):
         idle_time += (clock - last_event_time)
         w3_idle += (clock - last_event_time)
 
+# start simulation
 def start():
     import csv
+    # generating csv file to keep track of states
     with open('state_tracking.csv', 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3","Total Block Time","w1_idle","w2_idle","w3_idle","Total Idle Time(workstation)","w1_aval","w2_aval","w3_aval","Event Queue"])
