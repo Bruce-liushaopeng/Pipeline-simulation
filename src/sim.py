@@ -1,9 +1,9 @@
 import csv
 # constants
 insp1_c1_time = 5
-insp2_c2_time =9
-insp2_c3_time = 14
-ws1_time = 11
+insp2_c2_time =10
+insp2_c3_time = 15
+ws1_time = 10
 ws2_time = 12
 ws3_time = 9
 
@@ -108,6 +108,7 @@ def handle_evt(evt):
         else:
             bf_c2w2 += 1
             evt_queue.append((clock, w2_start))
+            evt_queue.append((clock,ins2_start))
 
     elif(evt_type == ins2c3_end):
         if(bf_c3w3 == 2):
@@ -166,9 +167,11 @@ def start():
         writer.writerow(["Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3", "Event Queue"])
         while(len(evt_queue) > 0 ):
             evt_queue.sort()
+            eventLeft = ""
+            for event in evt_queue:
+                eventLeft+='(' +str(event[0]) + ', '+event[1]+') '
             evt = evt_queue.pop(0)
             handle_evt(evt)
-            eventLeft = ""
             for event in evt_queue:
                 eventLeft+='(' +str(event[0]) + ', '+event[1]+') '
             writer.writerow([clock, bf_c1w1,bf_c1w2,bf_c1w3,bf_c2w2,bf_c3w3,p1_produce,p2_produce,p3_produce,str(eventLeft)])
