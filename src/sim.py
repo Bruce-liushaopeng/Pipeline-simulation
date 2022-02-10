@@ -1,9 +1,10 @@
+import csv
 # constants
 insp1_c1_time = 5
-insp2_c2_time =15
-insp2_c3_time = 20
-ws1_time = 5
-ws2_time = 11
+insp2_c2_time =9
+insp2_c3_time = 14
+ws1_time = 11
+ws2_time = 12
 ws3_time = 9
 
 # states tracking
@@ -17,41 +18,40 @@ bf_c3w3 = 0
 p1_produce = 0
 p2_produce = 0
 p3_produce = 0
-lastIsC2 = True # true indicate the next component for Ins2 is C3
+lastIsC2 = False # False indicate the next component for Ins2 is C2
 w1_aval = True
 w2_aval = True
 w3_aval = True
 evt_queue = [] #(time, event,) ex. (7,ins1c1_end)
 # events identifier
-ins1c1_start = "inspctor 1 start to inspect component 1"
-ins2c2_start = "inspctor 2 start to inspect component 2"
-ins2c3_start = "inspctor 2 start to inspect component 3"
-ins1c1_end = "inspctor 1 finished to inspect component 1"
-ins2c2_end = "inspctor 2 finished to inspect component 2"
-ins2c3_end = "inspctor 2 finished to inspect component 3"
+ins1c1_start = "ins1c1_start"
+ins2_start = "ins2_start"
+ins1c1_end = "ins1c1_end"
+ins2c2_end = "ins2c2_end"
+ins2c3_end = "ins2c3_end"
 
-w1_start = "Workstation 1 start to produce Part 1"
-w2_start = "Workstation 2 start to produce Part 2"
-w3_start = "Workstation 3 start to produce Part 3"
-w1_end = "Workstation 1 finished to produce Part 1"
-w2_end = "Workstation 2 finished to produce Part 2"
-w3_end = "Workstation 3 finished to produce Part 3"
+w1_start = "w1_start"
+w2_start = "w2_start"
+w3_start = "w3_start"
+w1_end = "w1_end"
+w2_end = "w2_end"
+w3_end = "w3_end"
 end_event = "system end"
 
-evt_queue = [(0,ins1c1_start), (0,ins2c2_start),(10,ins1c1_start),(60,end_event)] # initial evetn queue
+evt_queue = [(0,ins1c1_start), (0,ins2_start),(699,end_event)] # initial evetn queue
 
 def assign_c1():
     global bf_c1w1,bf_c1w2,bf_c1w3
     if(bf_c1w1 == bf_c1w2 == bf_c1w3):
         bf_c1w1+=1
         return 1
-    elif(bf_c1w1<bf_c1w2 and bf_c1w1<bf_c1w3):
+    elif(bf_c1w1<=bf_c1w2 and bf_c1w1<=bf_c1w3):
         bf_c1w1+=1
         return 1
-    elif(bf_c1w2<bf_c1w1 and bf_c1w2<bf_c1w3):
+    elif(bf_c1w2<=bf_c1w1 and bf_c1w2<=bf_c1w3):
         bf_c1w2+=1
         return 2
-    elif(bf_c1w3<bf_c1w1 and bf_c1w3<bf_c1w2):
+    elif(bf_c1w3<=bf_c1w1 and bf_c1w3<=bf_c1w2):
         bf_c1w3+=1
         return 3
     return 0
@@ -69,23 +69,23 @@ def handle_evt(evt):
     I think it is better to create event at the end of this function. 
     having another if statement to check if buffer c1w2 and c2w2 has enough component to assemble product
     '''
-    global clock, bf_c1w1, block_time, w1_aval, w2_aval, w3_aval, bf_c1w2, bf_c1w3, bf_c2w2, bf_c3w3
+    global clock, bf_c1w1, block_time, w1_aval, w2_aval, w3_aval, bf_c1w2, bf_c1w3, bf_c2w2, bf_c3w3,p1_produce,p2_produce,p3_produce,ins2_start,lastIsC2
+    clock = evt[0]
     print(evt[1] +" at time " +str(clock))
     print("length of event queue is " + str(len(evt_queue)))
     if(len(evt_queue)>1):
             next_evt_time = evt_queue[0][0]
-    clock = evt[0]
     evt_type = evt[1]
     if(evt_type == ins1c1_start):
         evt_queue.append((clock + insp1_c1_time,ins1c1_end))
-        print("create end evetn for ins1")
 
-    elif(evt_type == ins2c2_start):
-        evt_queue.append((clock + insp2_c2_time,ins2c2_end))
-        print("create end event for ins2")
-
-    elif(evt_type == ins2c3_start):
-        evt_queue.append((clock + insp2_c3_time, ins2c3_end))
+    elif(evt_type == ins2_start):
+        if lastIsC2:
+            lastIsC2 = False
+            evt_queue.append((clock + insp2_c3_time,ins2c3_end))
+        else:
+            lastIsC2 = True
+            evt_queue.append((clock + insp2_c2_time,ins2c2_end))
 
     elif(evt_type == ins1c1_end):
         if(is_bfC1_full()):
@@ -104,14 +104,14 @@ def handle_evt(evt):
 
     elif(evt_type == ins2c2_end):
         if(bf_c2w2 == 2):
-            evt_queue.append((clock + next_evt_time, ins2c2_end))
+            evt_queue.append(( next_evt_time + 0.5, ins2c2_end))
         else:
             bf_c2w2 += 1
             evt_queue.append((clock, w2_start))
 
     elif(evt_type == ins2c3_end):
         if(bf_c3w3 == 2):
-            evt_queue.append((clock + next_evt_time, ins2c3_end))
+            evt_queue.append(( next_evt_time + 0.5, ins2c3_end))
         else:
             bf_c3w3 += 1
             evt_queue.append((clock, w3_start))
@@ -122,7 +122,7 @@ def handle_evt(evt):
             w1_aval = False
             evt_queue.append((clock + ws1_time, w1_end))
         else:
-            evt_queue.append((clock + next_evt_time, w1_start))
+            evt_queue.append(( next_evt_time + 0.5, w1_start))
 
     elif(evt_type == w2_start):
         if(w2_aval and bf_c2w2>0 and bf_c1w2>0):
@@ -131,7 +131,7 @@ def handle_evt(evt):
             w2_aval = False
             evt_queue.append((clock + ws2_time, w2_end))
         else:
-            evt_queue.append((clock + next_evt_time, w2_start))
+            evt_queue.append(( next_evt_time + 0.5, w2_start))
     
     elif(evt_type == w3_start):
         if(w3_aval and bf_c3w3>0 and bf_c1w3>0):
@@ -140,15 +140,18 @@ def handle_evt(evt):
             w3_aval = False
             evt_queue.append((clock + ws3_time, w3_end))
         else:
-            evt_queue.append((clock + next_evt_time, w3_start))
+            evt_queue.append((next_evt_time + 0.5, w3_start))
 
     elif(evt_type == w1_end):
+        p1_produce +=1
         w1_aval = True
     
     elif(evt_type == w2_end):
+        p2_produce+=1
         w2_aval = True
 
     elif(evt_type == w3_end):
+        p3_produce+=1
         w3_aval = True
 
     elif(evt_type == end_event):
@@ -157,10 +160,18 @@ def handle_evt(evt):
 
 
 def start():
-    while(len(evt_queue) > 0 ):
-        evt_queue.sort(reverse=True)
-        evt = evt_queue.pop()
-        handle_evt(evt)
+    import csv
+    with open('state_tracking.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3", "Event Queue"])
+        while(len(evt_queue) > 0 ):
+            evt_queue.sort()
+            evt = evt_queue.pop(0)
+            handle_evt(evt)
+            eventLeft = ""
+            for event in evt_queue:
+                eventLeft+='(' +str(event[0]) + ', '+event[1]+') '
+            writer.writerow([clock, bf_c1w1,bf_c1w2,bf_c1w3,bf_c2w2,bf_c3w3,p1_produce,p2_produce,p3_produce,str(eventLeft)])
 
 
 start()
