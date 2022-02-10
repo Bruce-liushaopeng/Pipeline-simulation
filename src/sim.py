@@ -8,8 +8,13 @@ ws2_time = 12
 ws3_time = 9
 
 # states tracking
+last_event_time = 0 # this variable is for calculating idle time
 clock = 0
 block_time = 0
+idle_time = 0
+w1_idle = 0
+w2_idle = 0
+w3_idle = 0
 bf_c1w1 = 0
 bf_c1w2 = 0
 bf_c2w2 = 0
@@ -53,7 +58,7 @@ def workstation_start():
         bf_c1w2-=1
     if(w3_aval and bf_c3w3>0 and bf_c1w3>0):
         evt_queue.append((clock,w3_start))
-        w2_aval = False
+        w3_aval = False
         bf_c3w3-=1
         bf_c1w3-=1
 
@@ -86,7 +91,8 @@ def handle_evt(evt):
     I think it is better to create event at the end of this function. 
     having another if statement to check if buffer c1w2 and c2w2 has enough component to assemble product
     '''
-    global clock, bf_c1w1, block_time, w1_aval, w2_aval, w3_aval, bf_c1w2, bf_c1w3, bf_c2w2, bf_c3w3,p1_produce,p2_produce,p3_produce,ins2_start,lastIsC2
+    global clock,last_event_time,idle_time, bf_c1w1, block_time, w1_aval, w2_aval, w3_aval, bf_c1w2, bf_c1w3, bf_c2w2, bf_c3w3,p1_produce,p2_produce,p3_produce,ins2_start,lastIsC2,w1_idle,w2_idle,w3_idle
+    last_event_time = clock
     clock = evt[0]
     print("queue length is " + str(len(evt_queue)))
     print(evt[1] +" at time " +str(clock))
@@ -114,13 +120,7 @@ def handle_evt(evt):
             block_time += next_evt_time + 0.1- clock
             return
         else:
-            c1_assigned = assign_c1()
-           #if(c1_assigned == 1):
-           #     evt_queue.append((clock,w1_start))
-           # elif(c1_assigned == 2):
-           #     evt_queue.append((clock,w2_start))
-           # elif(c1_assigned == 3):
-           #     evt_queue.append((clock,w3_start))
+            assign_c1() #perform logic to assign c1 to the right buffer
             evt_queue.append((clock,ins1c1_start))
 
     elif(evt_type == ins2c2_end):
@@ -165,15 +165,21 @@ def handle_evt(evt):
         print(end_event)
         exit()
     workstation_start() #check if components are ready, if yes, start the workstation accordingly
-    
-    
-
+    if w1_aval:
+        idle_time += (clock - last_event_time)
+        w1_idle += (clock - last_event_time)
+    if w2_aval:
+        idle_time += (clock - last_event_time)
+        w2_idle += (clock - last_event_time)
+    if w3_aval:
+        idle_time += (clock - last_event_time)
+        w3_idle += (clock - last_event_time)
 
 def start():
     import csv
     with open('state_tracking.csv', 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3","Total Block Time" "Event Queue"])
+        writer.writerow(["Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3","Total Block Time","w1_idle","w2_idle","w3_idle","Total Idle Time(workstation)","w1_aval","w2_aval","w3_aval","Event Queue"])
         while(len(evt_queue) > 0 ):
             evt_queue.sort()
             eventLeft = ""
@@ -181,7 +187,7 @@ def start():
                 eventLeft+='(' +str(event[0]) + ', '+event[1]+') '
             evt = evt_queue.pop(0)
             handle_evt(evt)
-            writer.writerow([clock, bf_c1w1,bf_c1w2,bf_c1w3,bf_c2w2,bf_c3w3,p1_produce,p2_produce,p3_produce,block_time,str(eventLeft)])
+            writer.writerow([clock, bf_c1w1,bf_c1w2,bf_c1w3,bf_c2w2,bf_c3w3,p1_produce,p2_produce,p3_produce,block_time,w1_idle,w2_idle,w3_idle,idle_time,w1_aval,w2_aval,w3_aval,str(eventLeft)])
 
 
 start()
