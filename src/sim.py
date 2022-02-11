@@ -172,6 +172,9 @@ def handle_evt(evt):
     # end event and program exit
     elif(evt_type == end_event):
         print(end_event)
+        print("------------------------------------------------------------")
+        print("state_tracking.csv generated, please check for more detail")
+        print("------------------------------------------------------------")
         exit()
     workstation_start() #check if components are ready, if yes, start the workstation accordingly
     if w1_aval:
@@ -199,6 +202,6 @@ def start():
             evt = evt_queue.pop(0)
             handle_evt(evt)
             writer.writerow([clock, bf_c1w1,bf_c1w2,bf_c1w3,bf_c2w2,bf_c3w3,p1_produce,p2_produce,p3_produce,block_time,w1_idle,w2_idle,w3_idle,idle_time,w1_aval,w2_aval,w3_aval,str(eventLeft)])
-
+    
 
 start()
