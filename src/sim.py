@@ -1,5 +1,9 @@
 import csv
+from timeGenerator import timeGenerator
 # constants
+seed = input("please in put a seed")
+seed = int(seed)
+timeGenerator = timeGenerator(seed)
 insp1_c1_time = 5
 insp2_c2_time =10
 insp2_c3_time = 15
