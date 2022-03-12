@@ -4,13 +4,6 @@ from timeGenerator import timeGenerator
 seed = input("please in put a seed")
 seed = int(seed)
 timeGenerator = timeGenerator(seed)
-insp1_c1_time = 5
-insp2_c2_time =10
-insp2_c3_time = 15
-ws1_time = 10
-ws2_time = 12
-ws3_time = 9
-
 # states tracking
 last_event_time = 0 # this variable is for calculating idle time
 clock = 0
@@ -107,16 +100,16 @@ def handle_evt(evt):
 
     # inspector 1 start inspect C1
     if(evt_type == ins1c1_start): 
-        evt_queue.append((clock + insp1_c1_time,ins1c1_end))
+        evt_queue.append((clock + timeGenerator.getIns1Time(),ins1c1_end))
 
     # inspector 2 start inspect
     elif(evt_type == ins2_start):
         if lastIsC2: # if the last one inspected is C2, this time it will go for C3
             lastIsC2 = False
-            evt_queue.append((clock + insp2_c3_time,ins2c3_end))
+            evt_queue.append((clock + timeGenerator.getIns3Time(),ins2c3_end))
         else:
             lastIsC2 = True
-            evt_queue.append((clock + insp2_c2_time,ins2c2_end))
+            evt_queue.append((clock + timeGenerator.getIns2Time(),ins2c2_end))
 
     # instector 1 finished inspecting C1
     elif(evt_type == ins1c1_end):
@@ -149,14 +142,14 @@ def handle_evt(evt):
 
     # workstation 1 start 
     elif(evt_type == w1_start):
-        evt_queue.append((clock + ws1_time, w1_end))
+        evt_queue.append((clock + timeGenerator.getWs1Time(), w1_end))
 
     # workstation 2 start 
     elif(evt_type == w2_start):
-        evt_queue.append((clock + ws2_time, w2_end))
+        evt_queue.append((clock + timeGenerator.getWs2Time(), w2_end))
     # workstation 3 start 
     elif(evt_type == w3_start):
-        evt_queue.append((clock + ws3_time, w3_end))
+        evt_queue.append((clock + timeGenerator.getWs3Time(), w3_end))
 
     # workstation 1 finished produce 
     elif(evt_type == w1_end):
