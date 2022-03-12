@@ -1,52 +1,41 @@
 import random
 import numpy
 
+
 class timeGenerator:
-    def __init__(self,seed) -> None:
+    def __init__(self, seed) -> None:
         random.seed(seed)
-    
+
     def getIns1Time(self):
-        p = random.random()
-        print(p)
         MLE = 0.096545
-        ins1_time = numpy.log(1-p) / (-MLE)
-        return ins1_time    
-    
+        return self.generateTime(MLE)
+
     def getIns2Time(self):
-        p = random.random()
-        print(p)
         MLE = 0.064362
-        ins1_time = numpy.log(1-p) / (-MLE)
-        return ins1_time  
-    
+        return self.generateTime(MLE)
+
     def getIns3Time(self):
-        p = random.random()
-        print(p)
         MLE = 0.048466621
-        ins1_time = numpy.log(1-p) / (-MLE)
-        return ins1_time  
+        return self.generateTime(MLE)
 
     def getWs1Time(self):
-        p = random.random()
-        print(p)
         MLE = 0.217182777
-        ins1_time = numpy.log(1-p) / (-MLE)
-        return ins1_time  
-    
+
+        return self.generateTime(MLE)
+
     def getWs2Time(self):
-        p = random.random()
-        print(p)
         MLE = 0.090150136
 
-        ins1_time = numpy.log(1-p) / (-MLE)
-        return ins1_time  
-    
+        return self.generateTime(MLE)
+
     def getWs3Time(self):
-        p = random.random()
-        print(p)
         MLE = 0.113693469
 
-        ins1_time = numpy.log(1-p) / (-MLE)
-        return ins1_time  
+        return self.generateTime(MLE)
 
+    def generateTime(self, mle):
+        p = random.random()
+        print(p)
 
+        random_Time = numpy.log(1 - p) / (-mle)
+        return random_Time
