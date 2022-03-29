@@ -1,4 +1,5 @@
 import csv
+import math
 import random
 from timeGenerator import timeGenerator
 from sim_summary import simSummary as simSummmary
@@ -23,6 +24,7 @@ class Sim:
         # states tracking
         self.last_event_time = 0 # this variable is for calculating idle time
         self.clock = 0
+        self.notResetYet = True
         self.ins1_block_time = 0
         self.ins2_block_time = 0
         self.ins3_block_time = 0
@@ -45,6 +47,18 @@ class Sim:
         self.programStop = False
         self.evt_queue = [(0,ins1c1_start), (0,ins2_start),(5000,end_event)] #(time, event,) ex. (7,ins1c1_end)
    
+    def reset(self):
+        self.ins1_block_time = 0
+        self.ins2_block_time = 0
+        self.ins3_block_time = 0
+        self.block_time = 0
+        self.idle_time = 0
+        self.w1_idle = 0
+        self.w2_idle = 0
+        self.w3_idle = 0
+        self.p1_produce = 0
+        self.p2_produce = 0
+        self.p3_produce = 0
 
 
     # this function check the buffer condiftion and start workstation accordingly
@@ -89,6 +103,9 @@ class Sim:
         
     # this method handles events 
     def handle_evt(self,evt):
+        if(abs(self.clock-1000)<10 and self.notResetYet):
+            self.notResetYet = False
+            self.reset()
         self.last_event_time = self.clock # used to store last self.clock to calculate idle time
         self.clock = evt[0]
         #print(evt[1] +" at time " +str(self.clock))
@@ -203,5 +220,5 @@ class Sim:
                 writer.writerow([self.clock, self.bf_c1w1,self.bf_c1w2,self.bf_c1w3,self.bf_c2w2,self.bf_c3w3,self.p1_produce,self.p2_produce,self.p3_produce,self.ins1_block_time,self.ins2_block_time,self.ins3_block_time,self.block_time,self.w1_idle,self.w2_idle,self.w3_idle,self.idle_time,self.w1_aval,self.w2_aval,self.w3_aval,str(eventLeft)])
         
         summary = simSummmary(self.ins1_block_time,self.ins2_block_time,self.ins3_block_time,self.block_time,self.w1_idle,self.w2_idle,self.w3_idle,self.p1_produce,self.p2_produce,self.p3_produce)
-        print("sim complete")
+        #print("sim complete")
         return summary
