@@ -14,7 +14,7 @@ with open('bulk_summary.csv', 'w', newline='') as file:
                 mySim = Sim(count)
                 mySummary = mySim.start()
                 summaryList.append(mySummary)
-                writer.writerow([count,count,5000,1000,mySummary.p1,mySummary.p2,mySummary.p3,mySummary.ins2_block_time,mySummary.ins2_block_time,mySummary.ins3_block_time,mySummary.total_block_time,mySummary.w1_idle,mySummary.w2_idle,mySummary.w3_idle,mySummary.w1_idle+mySummary.w2_idle+mySummary.w3_idle])
+                writer.writerow([count,count,5000,1000,mySummary.p1,mySummary.p2,mySummary.p3,mySummary.ins1_block_time,mySummary.ins2_block_time,mySummary.ins3_block_time,mySummary.total_block_time,mySummary.w1_idle,mySummary.w2_idle,mySummary.w3_idle,mySummary.w1_idle+mySummary.w2_idle+mySummary.w3_idle])
                 count +=1
 
 sum_ins1_block=0

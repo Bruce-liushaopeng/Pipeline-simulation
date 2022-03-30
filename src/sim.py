@@ -209,7 +209,7 @@ class Sim:
         # generating csv file to keep track of states
         with open('state_tracking.csv', 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["self.Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3","inspector1 block time","inspector2 block time","inspector3 block time","Total Block Time","self.w1_idle","self.w2_idle","self.w3_idle","Total Idle Time(workstation)","self.w1_aval","self.w2_aval","self.w3_aval","Event Queue"])
+            writer.writerow(["self.Clock", "C1_W1","C1W2","C1W3","C2W2","C3W3", "Part1","Part2","Part3","inspector1 block time","inspector2_C2 block time","inspector2_C3 block time","Total Block Time","self.w1_idle","self.w2_idle","self.w3_idle","Total Idle Time(workstation)","self.w1_aval","self.w2_aval","self.w3_aval","Event Queue"])
             while(len(self.evt_queue) > 0 and not self.programStop):
                 self.evt_queue.sort()
                 eventLeft = ""
